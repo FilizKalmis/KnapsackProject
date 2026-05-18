@@ -1,29 +1,65 @@
-# Büyük Ölçekli Sırt Çantası Problemlerinde Algoritmik Geliştirme ve Optimizasyon Süreci
+🎒 Büyük Ölçekli Sırt Çantası Problemi – Optimizasyon ve Algoritma Karşılaştırması
 
-Bu proje, kombinatoryal optimizasyon ve algoritma analizi alanının en temel NP-Hard problemlerinden biri olan **0/1 Sırt Çantası Probleminin (Knapsack Problem)** büyük ölçekli veri setleri altındaki davranışlarını incelemektedir. Projede, kesin çözüm sunan **Dinamik Programlama (DP)** algoritması ile stokastik-arama tabanlı bir meta-sezgisel (*stochastic-search based metaheuristic*) yaklaşım olan **Genetik Algoritma (GA)** mimarisi; zaman maliyeti, bellek tüketimi ve çözüm kalitesi (doğruluk payı) eksenlerinde karşılaştırmalı deneysel analize tabi tutulmuştur.
+Bu proje, **0/1 Knapsack Problem** için büyük ölçekli veri setlerinde **Dynamic Programming (DP)** ve **Genetic Algorithm (GA)** yaklaşımlarını karşılaştırarak performans analizi yapmaktadır.
 
-Bu çalışma, sıradan bir ödev şablonunun ötesinde; büyük ölçekli problemlerde karşılaşılan donanımsal ve yazılımsal darboğazların (JVM bellek taşmaları, sezgisel algoritmaların kör arama uzaylarında kaybolması) gerçek mühendislik yaklaşımlarıyla nasıl çözüldüğünü gösteren **hibrit bir deneysel analiz çalışmasıdır**.
+📌 Problem Tanımı
 
----
+- Kapasite: `W`  
+- Nesne sayısı: `N`  
+- Her nesne için:  
+  - Ağırlık → `w_i`  
+  - Değer → `v_i`  
 
-## 🎯 Problemin Tanımı ve Teorik Altyapı
+Amaç: Kapasiteyi aşmadan toplam değeri maksimize eden nesne kombinasyonunu bulmak.
+⚠️ Karşılaşılan Sorunlar
 
-0/1 Sırt Çantası Problemi, matematiksel olarak şu şekilde modellenir:
-* Maksimum çanta kapasitesi $W$ ve toplam nesne sayısı $N$ olmak üzere; her $i$ nesnesinin bir $v_i$ değeri (value) ve $w_i$ ağırlığı (weight) bulunmaktadır.
-* Amacı, toplam ağırlık kısıtını ihlal etmeden, çantaya alınan nesnelerin toplam kârını maksimize edecek $x_i \in \{0, 1\}$ seçim vektörünü bulmaktır:
+1. **DP Bellek Problemi**  
+   - Klasik 2D DP matrisi (`dp[N+1][W+1]`) büyük veri setlerinde **OutOfMemoryError** üretti.  
 
-$$\max \sum_{i=1}^{N} v_i x_i \quad \text{kısıt:} \quad \sum_{i=1}^{N} w_i x_i \le W$$
+2. **GA Geçersiz Çözümler**  
+   - Rastgele popülasyon nedeniyle kapasiteyi aşan çözümler oluştu.  
+   - Çözümler elenince kâr **0** çıktı.  
 
-Eleman sayısı ($N$) arttıkça olası çözümlerin uzayı $2^N$ şeklinde eksponansiyel olarak büyümekte ve brute-force (kaba kuvvet) yöntemlerini imkansız kılmaktadır. Bu durum, büyük veri ölçeklerinde optimize edilmiş kesin algoritmaların veya akıllı sezgisel mekanizmaların kullanımını zorunlu kılmaktadır.
+🚀 Geliştirilen Çözümler
 
----
+✅ Space Optimized DP
+- 2D matris yerine 1D array (`dp[capacity+1]`) kullanıldı.  
+- Bellek karmaşıklığı **O(W)** seviyesine indirildi.  
+- 4 GB yerine ~400 KB RAM ile çalışıyor.  
 
-## ⚠️ Karşılaşılan Darboğazlar ve Başarısız İlk Versiyonlar
+✅ Enhanced GA
+- **Guided Initialization** → `value/weight` oranına göre daha verimli başlangıç popülasyonu.  
+- **Repair Operator** → Kapasiteyi aşan çözümlerden en verimsiz nesneler çıkarılarak geçerli hale getirildi.  
 
-Projenin geliştirme sürecinde, literatürdeki ham (naive) algoritmalar doğrudan büyük ölçekli verilere ($N=10.000$, $W=100.000$) uygulandığında sistem iki büyük krizle durma noktasına gelmiştir:
 
-### 1. Dinamik Programlama ve `OutOfMemoryError` Krizi
-Klasik Dinamik Programlama yaklaşımı, kararları saklamak için ardışık bellek üzerinde $O(N \times W)$ boyutunda iki boyutlu bir matris (`new int[10001][100001]`) oluşturmaktadır. Bu matris yapısı, her bir `int` hücresinin 4 bayt yer kaplaması nedeniyle, varsayılan JVM heap ayarları altında yaklaşık **4 GB ardışık RAM** talep etmiş ve terminale şu hatayı fırlatarak çökmüştür:
-```text
-Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
-    at DynamicProgrammingSolver.solve(DynamicProgrammingSolver.java:14)
+📊 Karmaşıklık Analizi
+
+- **Dynamic Programming**  
+  - Zaman: `O(N × W)`  
+  - Alan: `O(W)`  
+
+- **Genetic Algorithm**  
+  - Zaman: `O(G × P × N)`  
+  - Kapasiteden bağımsız çalışır.
+ 
+
+🧪 Deney Ortamı
+- OS: Windows 11  
+- CPU: Intel Core i7  
+- RAM: 16 GB  
+- Dil: Java 23  
+- IDE: IntelliJ IDEA  
+
+
+📈 Sonuçlar
+| N     | Kapasite | GA Süre   | GA Kâr | DP Süre  | DP Kâr | Accuracy Gap |
+| ----- | -------- | --------- | ------ | -------- | ------ | ------------ |
+| 10    | 50       | 0.00468s  | 254    | 0.00223s | 254    | %0.00        |
+| 100   | 2000     | 0.04780s  | 4886   | 0.00272s | 5070   | %3.63        |
+| 1000  | 20000    | 0.83000s  | 33422  | 0.01698s | 47389  | %29.47       |
+| 10000 | 100000   | 22.66000s | 280299 | 0.65000s | 362720 | %22.72       |
+
+
+🔍 Analiz
+- **DP** → Bellek optimizasyonu ile büyük veri setlerinde kararlı çalışıyor, fakat ölçek büyüdükçe pseudo-polynomial yapı nedeniyle yavaşlıyor.  
+- **GA** → Repair Operator sonrası geçerli çözümler üretiyor, büyük ölçeklerde daha avantajlı hale geliyor.  
